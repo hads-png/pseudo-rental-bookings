@@ -1,0 +1,32 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Environment variables
+.env
+
+# Node & CSS build
+node_modules/
+app/static/css/output.css
+
+# Media uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# Database & SQLite
+*.db
+*.sqlite
+instance/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

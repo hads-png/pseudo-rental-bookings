@@ -1,0 +1,51 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="space-y-3 mb-6">
+      {% for category, message in messages %}
+        {% set bg_color = 'bg-blue-50 border-blue-200 text-blue-800' %}
+        {% set icon_color = 'text-blue-500' %}
+        {% if category == 'success' %}
+          {% set bg_color = 'bg-emerald-50 border-emerald-200 text-emerald-800' %}
+          {% set icon_color = 'text-emerald-500' %}
+        {% elif category == 'danger' or category == 'error' %}
+          {% set bg_color = 'bg-rose-50 border-rose-200 text-rose-800' %}
+          {% set icon_color = 'text-rose-500' %}
+        {% elif category == 'warning' %}
+          {% set bg_color = 'bg-amber-50 border-amber-200 text-amber-800' %}
+          {% set icon_color = 'text-amber-500' %}
+        {% elif category == 'info' %}
+          {% set bg_color = 'bg-sky-50 border-sky-200 text-sky-800' %}
+          {% set icon_color = 'text-sky-500' %}
+        {% endif %}
+        
+        <div class="flash-alert flex items-center justify-between p-4 rounded-xl border {{ bg_color }} shadow-sm text-sm font-medium transition-all" role="alert">
+          <div class="flex items-center space-x-3">
+            {% if category == 'success' %}
+              <svg class="w-5 h-5 {{ icon_color }} shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            {% elif category == 'danger' or category == 'error' %}
+              <svg class="w-5 h-5 {{ icon_color }} shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            {% elif category == 'warning' %}
+              <svg class="w-5 h-5 {{ icon_color }} shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            {% else %}
+              <svg class="w-5 h-5 {{ icon_color }} shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 ml-4 p-1 rounded-md hover:bg-black/5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

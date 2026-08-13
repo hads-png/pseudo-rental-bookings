@@ -1,0 +1,12 @@
+{
+  "name": "pseudo-booqable",
+  "version": "1.0.0",
+  "description": "Rental Booking System - Booqable clone built with Flask & TailwindCSS",
+  "scripts": {
+    "css:build": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --minify",
+    "css:watch": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.6"
+  }
+}

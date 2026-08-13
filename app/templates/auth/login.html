@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In — Pseudo Booqable{% endblock %}
+
+{% block auth_content %}
+<div class="sm:mx-auto sm:w-full sm:max-w-md">
+  <!-- Brand logo -->
+  <div class="flex justify-center">
+    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+    </div>
+  </div>
+  <h2 class="mt-4 text-center text-2xl font-extrabold tracking-tight text-slate-900">
+    Sign in to your account
+  </h2>
+  <p class="mt-1.5 text-center text-sm text-slate-500">
+    Manage your rental bookings, inventory, and customers
+  </p>
+</div>
+
+<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+  <div class="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 rounded-2xl border border-slate-200/80 sm:px-10">
+    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}" class="space-y-5" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div>
+        <label for="username" class="form-label">Username or Email</label>
+        {{ form.username(class="form-input" ~ (" border-rose-300 focus:ring-rose-500 focus:border-rose-500" if form.username.errors else ""), placeholder="admin or admin@example.com", autofocus=true) }}
+        {% for error in form.username.errors %}
+          <p class="mt-1 text-xs text-rose-600 font-medium">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div>
+        <label for="password" class="form-label">Password</label>
+        {{ form.password(class="form-input" ~ (" border-rose-300 focus:ring-rose-500 focus:border-rose-500" if form.password.errors else ""), placeholder="••••••••") }}
+        {% for error in form.password.errors %}
+          <p class="mt-1 text-xs text-rose-600 font-medium">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          {{ form.remember_me(class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500") }}
+          <label for="remember_me" class="ml-2 block text-xs text-slate-600 select-none">Remember me</label>
+        </div>
+      </div>
+
+      <div>
+        {{ form.submit(class="btn-primary w-full !py-2.5 !text-sm font-semibold shadow-md shadow-indigo-600/20") }}
+      </div>
+    </form>
+
+    <div class="mt-6 border-t border-slate-100 pt-6 text-center">
+      <p class="text-xs text-slate-500">
+        Don't have an account yet?
+        <a href="{{ url_for('auth.register') }}" class="font-semibold text-indigo-600 hover:text-indigo-500">Register here</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
