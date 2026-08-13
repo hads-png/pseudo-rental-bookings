@@ -51,6 +51,13 @@ def test_user_login_and_logout(client, test_user):
     dash_response = client.get('/')
     assert dash_response.status_code == 200
     assert b'Phase 1 Live: Auth & Scaffolding' in dash_response.data
+    # Verify all sidebar navigation links are present
+    assert b'Dashboard' in dash_response.data
+    assert b'Products' in dash_response.data
+    assert b'Customers' in dash_response.data
+    assert b'Orders' in dash_response.data
+    assert b'Invoices' in dash_response.data
+    assert b'Settings' in dash_response.data
 
     # Logout
     logout_response = client.get('/auth/logout', follow_redirects=True)
@@ -69,3 +76,19 @@ def test_login_invalid_credentials(client, test_user):
     }, follow_redirects=True)
     assert response.status_code == 200
     assert b'Invalid username/email or password.' in response.data
+
+
+def test_settings_route_protected(client, test_user):
+    # Anonymous redirect
+    anon_response = client.get('/settings/', follow_redirects=False)
+    assert anon_response.status_code == 302
+    assert '/auth/login' in anon_response.location
+
+    # Authenticated access
+    client.post('/auth/login', data={
+        'username': 'testadmin',
+        'password': 'password123'
+    })
+    auth_response = client.get('/settings/')
+    assert auth_response.status_code == 200
+    assert b'Settings module will be fully active in Phase 8.' in auth_response.data
