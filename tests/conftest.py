@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 import pytest
 from app import create_app
 from app.extensions import db as _db
@@ -10,6 +13,9 @@ class TestConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'test-secret-key'
     WTF_CSRF_ENABLED = False
+    UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), 'pseudo_booqable_test_uploads')
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
 
 @pytest.fixture

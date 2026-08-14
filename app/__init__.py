@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template
 from config import Config
-from app.extensions import db, migrate, login_manager
+from app.extensions import db, migrate, login_manager, csrf
 
 
 def create_app(config_class=Config):
@@ -16,6 +16,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     # Configure User Loader
     from app.models.user import User
