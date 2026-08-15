@@ -103,6 +103,45 @@
       </div>
       {% endif %}
 
+      <!-- 30-Day Availability Calendar -->
+      <div class="card">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 mb-4 gap-2">
+          <h2 class="text-base font-semibold text-slate-900">30-Day Availability Calendar</h2>
+          <div class="flex items-center space-x-3 text-xs">
+            <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5"></span> Available</span>
+            <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5"></span> Partially Booked</span>
+            <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 mr-1.5"></span> Fully Booked</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2">
+          {% for day in availability_calendar %}
+            <div class="p-2.5 rounded-lg border text-center transition-all shadow-xs
+              {% if day.available == day.total %}
+                bg-emerald-50/60 border-emerald-200 text-emerald-900
+              {% elif day.available > 0 %}
+                bg-amber-50/60 border-amber-200 text-amber-900
+              {% else %}
+                bg-rose-50/60 border-rose-200 text-rose-900
+              {% endif %}">
+              <p class="text-[10px] font-semibold uppercase opacity-75">
+                {{ day.date.strftime('%a') }}
+              </p>
+              <p class="text-sm font-bold my-0.5">
+                {{ day.date.strftime('%b %d') }}
+              </p>
+              <div class="text-[11px] font-medium mt-1">
+                {% if day.available == 0 %}
+                  <span class="px-1.5 py-0.5 rounded-full bg-rose-200/80 font-semibold text-rose-800">0 / {{ day.total }}</span>
+                {% else %}
+                  <span>{{ day.available }} / {{ day.total }} left</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
       <!-- Metadata Card -->
       <div class="card">
         <h2 class="text-base font-semibold text-slate-900 pb-3 border-b border-slate-100 mb-4">Details</h2>

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if order %}Edit Order #{{ order.order_number }}{% else %}New Order{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  <!-- Top Navigation / Breadcrumb -->
+  <div class="flex items-center space-x-2 text-sm text-slate-500">
+    <a href="{{ url_for('orders.index') }}" class="hover:text-slate-900 transition-colors">Orders</a>
+    <span>/</span>
+    <span class="text-slate-900 font-medium">{% if order %}Edit #{{ order.order_number }}{% else %}New Order{% endif %}</span>
+  </div>
+
+  <form method="POST" action="{% if order %}{{ url_for('orders.edit', id=order.id) }}{% else %}{{ url_for('orders.create') }}{% endif %}" class="space-y-6" id="order-form" {% if order %}data-order-id="{{ order.id }}"{% endif %}>
+    {{ form.hidden_tag() }}
+
+    <!-- Header Card -->
+    <div class="card">
+      <h1 class="text-xl font-bold text-slate-900">
+        {% if order %}Edit Booking Order #{{ order.order_number }}{% else %}Create New Rental Order{% endif %}
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">Fill out customer info, select rental dates, and specify line items.</p>
+    </div>
+
+    <!-- Section 1: Customer & Dates -->
+    <div class="card space-y-4">
+      <h2 class="text-base font-semibold text-slate-900 border-b border-slate-100 pb-3">1. Customer & Rental Period</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-1">
+          <label for="customer_id" class="form-label">Customer <span class="text-rose-500">*</span></label>
+          {{ form.customer_id(class="form-select " + ("border-rose-500" if form.customer_id.errors else "")) }}
+          {% for err in form.customer_id.errors %}
+            <p class="form-error">{{ err }}</p>
+          {% endfor %}
+          <div class="mt-1">
+            <a href="{{ url_for('customers.create') }}" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">+ Add new customer</a>
+          </div>
+        </div>
+
+        <div>
+          <label for="rental_start" class="form-label">Start Date <span class="text-rose-500">*</span></label>
+          {{ form.rental_start(class="form-input " + ("border-rose-500" if form.rental_start.errors else ""), type="date") }}
+          {% for err in form.rental_start.errors %}
+            <p class="form-error">{{ err }}</p>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label for="rental_end" class="form-label">End Date <span class="text-rose-500">*</span></label>
+          {{ form.rental_end(class="form-input " + ("border-rose-500" if form.rental_end.errors else ""), type="date") }}
+          {% for err in form.rental_end.errors %}
+            <p class="form-error">{{ err }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Line Items -->
+    <div class="card space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-base font-semibold text-slate-900">2. Order Line Items</h2>
+        <button type="button" id="add-item-btn" class="btn-secondary text-xs py-1.5 px-3">
+          + Add Product
+        </button>
+      </div>
+
+      <div id="order-items-container" class="space-y-3">
+        {% for item_form in form.items %}
+        <div class="order-item-row flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-slate-50/70 border border-slate-200/80 rounded-xl">
+          <div class="flex-1 w-full">
+            <label class="form-label text-xs sm:hidden">Product</label>
+            {{ item_form.product_id(class="form-select text-sm product-select") }}
+            <p class="availability-info text-xs font-medium mt-1 hidden"></p>
+            {% for err in item_form.product_id.errors %}
+              <p class="form-error">{{ err }}</p>
+            {% endfor %}
+          </div>
+          <div class="w-full sm:w-28">
+            <label class="form-label text-xs sm:hidden">Quantity</label>
+            {{ item_form.quantity(class="form-input text-sm", type="number", min="1") }}
+            {% for err in item_form.quantity.errors %}
+              <p class="form-error">{{ err }}</p>
+            {% endfor %}
+          </div>
+          <div class="shrink-0 self-end sm:self-center">
+            <button type="button" class="remove-item-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-lg transition-colors" title="Remove Product">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% for err in form.items.errors %}
+        {% if err is string %}
+          <p class="form-error">{{ err }}</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Section 3: Financial Adjustments & Notes -->
+    <div class="card space-y-4">
+      <h2 class="text-base font-semibold text-slate-900 border-b border-slate-100 pb-3">3. Adjustments & Notes</h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="discount" class="form-label">Discount Amount ($)</label>
+          {{ form.discount(class="form-input", step="0.01") }}
+          {% for err in form.discount.errors %}
+            <p class="form-error">{{ err }}</p>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label for="tax_rate" class="form-label">Tax Rate (e.g. 0.10 for 10%)</label>
+          {{ form.tax_rate(class="form-input", step="0.0001") }}
+          {% for err in form.tax_rate.errors %}
+            <p class="form-error">{{ err }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <label for="notes" class="form-label">Internal Notes</label>
+        {{ form.notes(class="form-input", rows="3", placeholder="Optional delivery instructions or customer requests...") }}
+        {% for err in form.notes.errors %}
+          <p class="form-error">{{ err }}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end space-x-3">
+      <a href="{% if order %}{{ url_for('orders.detail', id=order.id) }}{% else %}{{ url_for('orders.index') }}{% endif %}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">
+        {% if order %}Update Order{% else %}Save Order{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

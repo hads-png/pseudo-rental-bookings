@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from flask import render_template, redirect, url_for, flash, request, current_app, abort
 from flask_login import login_required
 from app.blueprints.products import products_bp
@@ -5,6 +6,7 @@ from app.blueprints.products.forms import ProductForm
 from app.extensions import db
 from app.models.product import Product
 from app.services.product_service import generate_unique_slug, save_product_image, delete_product_image
+from app.services.availability import get_available_quantity, get_booked_quantity
 
 
 @products_bp.route('/')
@@ -84,9 +86,27 @@ def create():
 @products_bp.route('/<int:id>')
 @login_required
 def detail(id):
-    """Show product detail page."""
+    """Show product detail page with 30-day availability calendar."""
     product = Product.query.filter_by(id=id, is_active=True).first_or_404()
-    return render_template('products/detail.html', product=product)
+
+    today = date.today()
+    availability_calendar = []
+    for i in range(30):
+        day = today + timedelta(days=i)
+        avail = get_available_quantity(product.id, day, day)
+        booked = get_booked_quantity(product.id, day, day)
+        availability_calendar.append({
+            'date': day,
+            'available': avail,
+            'booked': booked,
+            'total': product.total_stock
+        })
+
+    return render_template(
+        'products/detail.html',
+        product=product,
+        availability_calendar=availability_calendar
+    )
 
 
 @products_bp.route('/<int:id>/edit', methods=['GET', 'POST'])

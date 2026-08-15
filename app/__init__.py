@@ -33,6 +33,7 @@ def create_app(config_class=Config):
     from app.blueprints.orders import orders_bp
     from app.blueprints.invoices import invoices_bp
     from app.blueprints.settings import settings_bp
+    from app.blueprints.api import api_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -41,6 +42,7 @@ def create_app(config_class=Config):
     app.register_blueprint(orders_bp)
     app.register_blueprint(invoices_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(api_bp)
 
     # Error handlers
     @app.errorhandler(404)

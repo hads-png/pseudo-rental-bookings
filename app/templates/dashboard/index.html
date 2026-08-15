@@ -5,19 +5,19 @@
 {% block content %}
 <div class="space-y-8">
   <!-- Page Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200/80">
     <div>
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
         Welcome, <span class="text-indigo-600">{{ current_user.username }}</span>! 👋
       </h1>
       <p class="text-sm text-slate-500 mt-1">
-        Here is what's happening with your rental system today.
+        Overview of your rental operations, revenue performance, and inventory metrics.
       </p>
     </div>
     <div class="flex items-center space-x-3">
       <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
         <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-ping"></span>
-        Phase 1 Live: Auth & Scaffolding
+        Phase 7 Live: Analytics & Reports
       </span>
     </div>
   </div>
@@ -31,15 +31,15 @@
     </div>
   {% endif %}
 
-  <!-- Stats Grid -->
+  <!-- Top Summary Stats Grid -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
     <!-- Active Orders -->
     <div class="card relative overflow-hidden group hover:border-indigo-300 hover:shadow-md transition-all">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Orders</p>
-          <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ order_count|default(0) }}</p>
-          <p class="text-[11px] text-slate-400 mt-1">Ready for Phase 4 engine</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Bookings</p>
+          <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ active_orders_count|default(0) }}</p>
+          <p class="text-[11px] text-slate-400 mt-1">Confirmed & Picked Up</p>
         </div>
         <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,13 +49,30 @@
       </div>
     </div>
 
-    <!-- Total Products -->
-    <div class="card relative overflow-hidden group hover:border-indigo-300 hover:shadow-md transition-all">
+    <!-- Revenue This Month -->
+    <div class="card relative overflow-hidden group hover:border-emerald-300 hover:shadow-md transition-all">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Products Catalog</p>
-          <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ product_count|default(0) }}</p>
-          <p class="text-[11px] text-slate-400 mt-1">Schema migrated & ready</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Monthly Revenue</p>
+          <p class="text-3xl font-extrabold text-emerald-600 mt-1">${{ "%.2f"|format(monthly_revenue|default(0.0)) }}</p>
+          <p class="text-[11px] text-slate-400 mt-1">Starting this month</p>
+        </div>
+
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Products -->
+    <div class="card relative overflow-hidden group hover:border-violet-300 hover:shadow-md transition-all">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Products</p>
+          <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ product_count }}</p>
+          <p class="text-[11px] text-slate-400 mt-1">Available in catalog</p>
         </div>
         <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,12 +83,12 @@
     </div>
 
     <!-- Total Customers -->
-    <div class="card relative overflow-hidden group hover:border-indigo-300 hover:shadow-md transition-all">
+    <div class="card relative overflow-hidden group hover:border-sky-300 hover:shadow-md transition-all">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Customers</p>
-          <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ customer_count|default(0) }}</p>
-          <p class="text-[11px] text-slate-400 mt-1">Client registry ready</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Customers</p>
+          <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ customer_count }}</p>
+          <p class="text-[11px] text-slate-400 mt-1">Registered clients</p>
         </div>
         <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center group-hover:scale-110 transition-transform">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,73 +97,236 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- System Status -->
-    <div class="card relative overflow-hidden group hover:border-emerald-300 hover:shadow-md transition-all">
+  <!-- Analytics & Charts Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- 6-Month Revenue Bar Chart (2 columns) -->
+    <div class="card lg:col-span-2 space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">System Health</p>
-          <p class="text-2xl font-extrabold text-emerald-600 mt-1">100% OK</p>
-          <p class="text-[11px] text-slate-400 mt-1">Database & Auth connected</p>
+          <h2 class="text-base font-bold text-slate-900">Revenue Performance</h2>
+          <p class="text-xs text-slate-500">Monthly gross booking total for the past 6 months</p>
         </div>
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
+        <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md">Last 6 Months</span>
       </div>
+      <div class="h-64 relative">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Orders by Status & Top Products (1 column) -->
+    <div class="space-y-6 lg:col-span-1">
+
+      <!-- Orders Status Breakdown -->
+      <div class="card space-y-4">
+        <h2 class="text-base font-bold text-slate-900">Orders by Status</h2>
+        <div class="space-y-3">
+          {% set status_map = orders_by_status or {} %}
+          <!-- Draft -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-medium text-slate-600 flex items-center">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-400 mr-2"></span>Draft
+            </span>
+            <span class="font-mono font-bold text-slate-900">{{ status_map.get('draft', 0) }}</span>
+          </div>
+          <!-- Confirmed -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-medium text-sky-700 flex items-center">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-500 mr-2"></span>Confirmed
+            </span>
+            <span class="font-mono font-bold text-slate-900">{{ status_map.get('confirmed', 0) }}</span>
+          </div>
+          <!-- Picked Up -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-medium text-amber-700 flex items-center">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2"></span>Picked Up
+            </span>
+            <span class="font-mono font-bold text-slate-900">{{ status_map.get('picked_up', 0) }}</span>
+          </div>
+          <!-- Returned -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-medium text-emerald-700 flex items-center">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>Returned
+            </span>
+            <span class="font-mono font-bold text-slate-900">{{ status_map.get('returned', 0) }}</span>
+          </div>
+          <!-- Cancelled -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-medium text-rose-700 flex items-center">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 mr-2"></span>Cancelled
+            </span>
+            <span class="font-mono font-bold text-slate-900">{{ status_map.get('cancelled', 0) }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Top Rented Products -->
+      <div class="card space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-bold text-slate-900">Top Rented Products</h2>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">30 Days</span>
+        </div>
+        {% if top_products %}
+          <div class="space-y-3">
+            {% for item in top_products %}
+              <div class="flex items-center justify-between text-xs">
+                <div class="truncate mr-2">
+                  <a href="{{ url_for('products.detail', id=item.product.id) }}" class="font-semibold text-slate-900 hover:text-indigo-600 truncate block">
+                    {{ item.product.name }}
+                  </a>
+                  <span class="text-slate-400 text-[11px]">${{ "%.2f"|format(item.product.daily_rate) }}/day</span>
+                </div>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md font-mono font-bold bg-indigo-50 text-indigo-700 shrink-0">
+                  {{ item.total_rented }} unit{% if item.total_rented != 1 %}s{% endif %}
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-xs text-slate-400 py-2 text-center">No rented products in the last 30 days.</p>
+        {% endif %}
+      </div>
+
     </div>
   </div>
 
-  <!-- Phase Implementation Tracker Card -->
-  <div class="card">
-    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+  <!-- Recent Orders Table Section -->
+  <div class="card p-0 overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
       <div>
-        <h2 class="text-base font-bold text-slate-900">Project Implementation Roadmap</h2>
-        <p class="text-xs text-slate-500">Sequential milestones for the Pseudo Booqable system</p>
+        <h2 class="text-base font-bold text-slate-900">Recent Bookings</h2>
+        <p class="text-xs text-slate-500">Latest 5 orders created across the system</p>
       </div>
-      <span class="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-md">
-        Phase 1 of 8 Complete
-      </span>
+      <a href="{{ url_for('orders.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
+        View All Orders →
+      </a>
     </div>
 
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Phase 1 -->
-      <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
-        <div class="flex items-center space-x-2 text-emerald-700 font-semibold text-xs mb-1">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
-          <span>Phase 1 — Auth & Core</span>
-        </div>
-        <p class="text-xs text-slate-600">Scaffolding, full database schema models, session auth, and Tailwind design.</p>
+    {% if recent_orders %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50/80 border-b border-slate-200/80">
+              <th class="text-left px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Order</th>
+              <th class="text-left px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Customer</th>
+              <th class="text-left px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Status</th>
+              <th class="text-left px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Rental Dates</th>
+              <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Total</th>
+              <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for order in recent_orders %}
+            <tr class="hover:bg-slate-50/60 transition-colors">
+              <td class="px-6 py-3.5">
+                <a href="{{ url_for('orders.detail', id=order.id) }}" class="font-bold text-indigo-600 hover:text-indigo-700">
+                  {{ order.order_number }}
+                </a>
+              </td>
+              <td class="px-6 py-3.5">
+                <a href="{{ url_for('customers.detail', id=order.customer.id) }}" class="font-medium text-slate-900 hover:text-indigo-600">
+                  {{ order.customer.full_name }}
+                </a>
+              </td>
+              <td class="px-6 py-3.5">
+                {% if order.status == 'draft' %}
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">Draft</span>
+                {% elif order.status == 'confirmed' %}
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">Confirmed</span>
+                {% elif order.status == 'picked_up' %}
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Picked Up</span>
+                {% elif order.status == 'returned' %}
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Returned</span>
+                {% elif order.status == 'cancelled' %}
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Cancelled</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-3.5 text-xs text-slate-600">
+                {{ order.rental_start.strftime('%b %d') }} - {{ order.rental_end.strftime('%b %d, %Y') }}
+              </td>
+              <td class="px-6 py-3.5 text-right font-semibold font-mono text-slate-900">
+                ${{ "%.2f"|format(order.total) }}
+              </td>
+              <td class="px-6 py-3.5 text-right">
+                <a href="{{ url_for('orders.detail', id=order.id) }}" class="text-slate-400 hover:text-indigo-600" title="View Detail">
+                  <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-
-      <!-- Phase 2 -->
-      <div class="p-4 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 transition-colors">
-        <div class="flex items-center space-x-2 text-slate-700 font-semibold text-xs mb-1">
-          <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-          <span>Phase 2 — Products</span>
-        </div>
-        <p class="text-xs text-slate-500">Catalog CRUD, image uploads, category filter, slug auto-generation.</p>
+    {% else %}
+      <div class="p-8 text-center text-xs text-slate-400">
+        No orders found yet. Create a booking to start populating your dashboard.
       </div>
-
-      <!-- Phase 3 -->
-      <div class="p-4 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 transition-colors">
-        <div class="flex items-center space-x-2 text-slate-700 font-semibold text-xs mb-1">
-          <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-          <span>Phase 3 — Customers</span>
-        </div>
-        <p class="text-xs text-slate-500">Customer directory, rental history view, search & validations.</p>
-      </div>
-
-      <!-- Phase 4 -->
-      <div class="p-4 rounded-xl border border-slate-200 bg-white hover:border-indigo-200 transition-colors">
-        <div class="flex items-center space-x-2 text-slate-700 font-semibold text-xs mb-1">
-          <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-          <span>Phase 4 — Bookings</span>
-        </div>
-        <p class="text-xs text-slate-500">Multi-item order builder, dynamic pricing, and order status workflow.</p>
-      </div>
-    </div>
+    {% endif %}
   </div>
 </div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+
+    fetch('/api/dashboard/revenue')
+      .then(res => res.json())
+      .then(data => {
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.labels,
+            datasets: [{
+              label: 'Revenue ($)',
+              data: data.data,
+              backgroundColor: 'rgba(79, 70, 229, 0.85)',
+              borderColor: 'rgb(67, 56, 202)',
+              borderWidth: 1.5,
+              borderRadius: 6,
+              hoverBackgroundColor: 'rgba(79, 70, 229, 1)'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return ' Revenue: $' + context.raw.toFixed(2);
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return '$' + value;
+                  },
+                  font: { family: 'ui-sans-serif, system-ui' }
+                },
+                grid: { color: 'rgba(226, 232, 240, 0.6)' }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      })
+      .catch(err => console.error('Failed to load revenue chart data:', err));
+  });
+</script>
 {% endblock %}

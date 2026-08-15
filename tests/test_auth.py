@@ -50,7 +50,8 @@ def test_user_login_and_logout(client, test_user):
     # Access protected dashboard
     dash_response = client.get('/')
     assert dash_response.status_code == 200
-    assert b'Phase 1 Live: Auth & Scaffolding' in dash_response.data
+    assert b'Phase 7 Live: Analytics & Reports' in dash_response.data
+
     # Verify all sidebar navigation links are present
     assert b'Dashboard' in dash_response.data
     assert b'Products' in dash_response.data

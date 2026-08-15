@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Top Navigation / Breadcrumb -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center space-x-2 text-sm text-slate-500">
+      <a href="{{ url_for('orders.index') }}" class="hover:text-slate-900 transition-colors">Orders</a>
+      <span>/</span>
+      <span class="text-slate-900 font-medium">#{{ order.order_number }}</span>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <a href="{{ url_for('orders.invoice', id=order.id) }}" target="_blank" class="btn-secondary text-sm inline-flex items-center">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+        </svg>
+        View Invoice
+      </a>
+      {% if order.status in ('draft', 'confirmed') %}
+        <a href="{{ url_for('orders.edit', id=order.id) }}" class="btn-secondary text-sm">
+          <svg class="w-4 h-4 mr-1.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+          Edit Order
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Header Invoice Banner -->
+  <div class="card flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-3">
+        <h1 class="text-2xl font-bold text-slate-900">Order #{{ order.order_number }}</h1>
+        {% if order.status == 'draft' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">Draft</span>
+        {% elif order.status == 'confirmed' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">Confirmed</span>
+        {% elif order.status == 'picked_up' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Picked Up</span>
+        {% elif order.status == 'returned' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Returned</span>
+        {% elif order.status == 'cancelled' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Cancelled</span>
+        {% endif %}
+
+        {% if order.payment_status == 'paid' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
+        {% elif order.payment_status == 'partially_paid' %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Partially Paid</span>
+        {% else %}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Unpaid</span>
+        {% endif %}
+      </div>
+      <p class="text-xs text-slate-500 mt-1">Created on {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+    </div>
+
+    <!-- Status Transition Actions -->
+    <div class="flex flex-wrap items-center gap-2">
+      {% if order.status == 'draft' %}
+        <form method="POST" action="{{ url_for('orders.change_status', id=order.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="confirmed">
+          <button type="submit" class="btn-primary bg-sky-600 hover:bg-sky-700 text-white">Confirm Order</button>
+        </form>
+        <form method="POST" action="{{ url_for('orders.cancel', id=order.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-danger" data-confirm="Are you sure you want to cancel this order?" data-confirm-title="Cancel Order?">Cancel Order</button>
+        </form>
+      {% elif order.status == 'confirmed' %}
+        <form method="POST" action="{{ url_for('orders.change_status', id=order.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="picked_up">
+          <button type="submit" class="btn-primary bg-amber-600 hover:bg-amber-700 text-white">Mark Picked Up</button>
+        </form>
+        <form method="POST" action="{{ url_for('orders.cancel', id=order.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-danger" data-confirm="Are you sure you want to cancel this order?" data-confirm-title="Cancel Order?">Cancel Order</button>
+        </form>
+      {% elif order.status == 'picked_up' %}
+        <form method="POST" action="{{ url_for('orders.change_status', id=order.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="returned">
+          <button type="submit" class="btn-primary bg-emerald-600 hover:bg-emerald-700 text-white">Mark Returned</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Customer & Schedule -->
+    <div class="space-y-6 lg:col-span-1">
+      <!-- Customer Info Card -->
+      <div class="card space-y-3">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer Contact</h2>
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm flex items-center justify-center shrink-0">
+            {{ order.customer.first_name[0]|upper }}{{ order.customer.last_name[0]|upper }}
+          </div>
+          <div>
+            <a href="{{ url_for('customers.detail', id=order.customer.id) }}" class="font-semibold text-slate-900 hover:text-indigo-600">
+              {{ order.customer.full_name }}
+            </a>
+            <p class="text-xs text-slate-500 truncate">{{ order.customer.email }}</p>
+          </div>
+        </div>
+        <div class="pt-2 text-xs space-y-1 text-slate-600 border-t border-slate-100">
+          <p><span class="font-medium text-slate-700">Phone:</span> {{ order.customer.phone or 'N/A' }}</p>
+          <p><span class="font-medium text-slate-700">Address:</span> {{ order.customer.address or 'N/A' }}</p>
+        </div>
+      </div>
+
+      <!-- Rental Schedule Card -->
+      <div class="card space-y-3">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rental Schedule</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500">Start Date:</span>
+            <span class="font-semibold text-slate-900">{{ order.rental_start.strftime('%b %d, %Y') }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500">End Date:</span>
+            <span class="font-semibold text-slate-900">{{ order.rental_end.strftime('%b %d, %Y') }}</span>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+            <span class="text-slate-500">Duration:</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700">
+              {{ rental_days }} day{% if rental_days != 1 %}s{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Card -->
+      {% if order.notes %}
+      <div class="card space-y-2">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Internal Notes</h2>
+        <p class="text-sm text-slate-700 whitespace-pre-line">{{ order.notes }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Line Items & Summary -->
+    <div class="space-y-6 lg:col-span-2">
+      <!-- Line Items Table Card -->
+      <div class="card p-0 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h2 class="text-base font-semibold text-slate-900">Line Items Breakdown</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200/80">
+                <th class="text-left px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Product</th>
+                <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Daily Rate</th>
+                <th class="text-center px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Qty</th>
+                <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Line Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for item in order.order_items %}
+              <tr>
+                <td class="px-6 py-4">
+                  <span class="font-medium text-slate-900">{{ item.product.name }}</span>
+                  {% if item.product.category %}
+                    <span class="text-xs text-slate-400 block">{{ item.product.category }}</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 text-right text-slate-600 font-mono">
+                  ${{ "%.2f"|format(item.daily_rate) }} / day
+                </td>
+                <td class="px-6 py-4 text-center font-medium text-slate-900">
+                  {{ item.quantity }}
+                </td>
+                <td class="px-6 py-4 text-right font-bold text-slate-900 font-mono">
+                  ${{ "%.2f"|format(item.line_total) }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Financial Calculation Card -->
+      <div class="card space-y-4">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Financial Breakdown & Payments</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pt-2">
+          <!-- Record Payment Form -->
+          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200/80 space-y-3">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Record Payment</h3>
+            {% set balance_due = order.total - (order.amount_paid or 0) %}
+            {% if balance_due > 0 %}
+              <form method="POST" action="{{ url_for('orders.record_payment', id=order.id) }}" class="space-y-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                  <label for="amount" class="block text-xs font-medium text-slate-600 mb-1">Payment Amount ($)</label>
+                  <div class="relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span class="text-slate-400 text-sm">$</span>
+                    </div>
+                    <input type="number" step="0.01" min="0.01" max="{{ "%.2f"|format(balance_due) }}" name="amount" id="amount" value="{{ "%.2f"|format(balance_due) }}" required class="form-input pl-7 text-sm font-mono" placeholder="0.00">
+                  </div>
+                </div>
+                <button type="submit" class="w-full btn-primary bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2">
+                  Submit Payment
+                </button>
+              </form>
+            {% else %}
+              <div class="p-3 bg-emerald-50 text-emerald-800 rounded border border-emerald-200 text-xs flex items-center space-x-2">
+                <svg class="w-4 h-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>This order is fully paid. Balance is $0.00.</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Financial Calculation Breakdown -->
+          <div class="space-y-2 text-sm max-w-xs ml-auto w-full">
+            <div class="flex justify-between text-slate-600">
+              <span>Subtotal:</span>
+              <span class="font-medium text-slate-900 font-mono">${{ "%.2f"|format(order.subtotal) }}</span>
+            </div>
+            {% if order.discount and order.discount > 0 %}
+            <div class="flex justify-between text-emerald-600">
+              <span>Discount:</span>
+              <span class="font-medium font-mono">-${{ "%.2f"|format(order.discount) }}</span>
+            </div>
+            {% endif %}
+            {% if order.tax_rate and order.tax_rate > 0 %}
+            <div class="flex justify-between text-slate-600">
+              <span>Tax ({{ "%.2f"|format(order.tax_rate * 100) }}%):</span>
+              <span class="font-medium text-slate-900 font-mono">
+                ${{ "%.2f"|format((order.subtotal - (order.discount or 0)) * order.tax_rate) }}
+              </span>
+            </div>
+            {% endif %}
+            <div class="flex justify-between items-center pt-2 border-t border-slate-200 text-base font-bold text-slate-900">
+              <span>Total Amount:</span>
+              <span class="text-indigo-600 font-mono text-xl">${{ "%.2f"|format(order.total) }}</span>
+            </div>
+            <div class="flex justify-between text-slate-600 pt-1">
+              <span>Amount Paid:</span>
+              <span class="font-medium text-emerald-700 font-mono">${{ "%.2f"|format(order.amount_paid or 0) }}</span>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-100 font-bold">
+              <span>Balance Due:</span>
+              <span class="font-mono text-lg {% if balance_due > 0 %}text-rose-600{% else %}text-slate-700{% endif %}">
+                ${{ "%.2f"|format(balance_due if balance_due > 0 else 0) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

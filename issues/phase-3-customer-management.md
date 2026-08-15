@@ -1,4 +1,4 @@
-# Phase 3 — Customer Management
+1# Phase 3 — Customer Management
 
 **Goal:** Full CRUD for customers. Admin can manage customers and see their future order history (orders come in Phase 4).
 
@@ -21,3 +21,4 @@
 - [x] Admin can create, view, edit, and delete customers.
 - [x] Deleting a customer with orders shows an error message (`"Could not delete customer — they have existing orders."`).
 - [x] Search by name/email works.
+1
