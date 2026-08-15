@@ -101,3 +101,7 @@ If you used the seed script, log in with:
 - `app/templates/` - Jinja2 HTML templates.
 - `app/static/` - Compiled CSS, JavaScript, and user uploads.
 - `tests/` - Comprehensive test suites spanning all modules.
+
+## Screenshots
+
+*(Coming Soon)*
