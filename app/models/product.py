@@ -18,6 +18,7 @@ class Product(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     order_items = db.relationship('OrderItem', back_populates='product', lazy='dynamic')
+    pricing_tiers = db.relationship('PricingTier', back_populates='product', cascade='all, delete-orphan')
 
     def __repr__(self) -> str:
         return f'<Product {self.name} (Stock: {self.total_stock})>'

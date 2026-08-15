@@ -40,10 +40,13 @@
     <!-- Header: Business Info & Invoice Label -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-8 mb-8 border-b border-slate-200 gap-6">
       <div>
-        <h1 class="text-3xl font-extrabold text-indigo-600 tracking-tight">Pseudo Booqable</h1>
+        <h1 class="text-3xl font-extrabold text-indigo-600 tracking-tight">{{ settings.business_name if settings else "Pseudo Booqable" }}</h1>
         <p class="text-sm text-slate-500 mt-1">Rental Management & Equipment Solutions</p>
-        <p class="text-xs text-slate-400 mt-1">123 Equipment Way, Suite 100 • Springfield, ST 12345</p>
-        <p class="text-xs text-slate-400">support@pseudobooqable.com • (555) 019-2834</p>
+        {% if settings and settings.business_address %}
+          <p class="text-xs text-slate-400 mt-1 whitespace-pre-line">{{ settings.business_address }}</p>
+        {% else %}
+          <p class="text-xs text-slate-400 mt-1">123 Equipment Way, Suite 100 • Springfield, ST 12345</p>
+        {% endif %}
       </div>
       <div class="text-left sm:text-right">
         <span class="inline-block px-3 py-1 bg-slate-100 text-slate-800 text-xs font-bold uppercase tracking-wider rounded-md mb-2">INVOICE</span>
@@ -77,13 +80,13 @@
       <div class="sm:text-right">
         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Rental Period</h3>
         <p class="text-sm text-slate-700">
-          <span class="font-medium text-slate-900">Start:</span> {{ order.rental_start.strftime('%b %d, %Y') }}
+          <span class="font-medium text-slate-900">Start:</span> {{ order.rental_start.strftime('%b %d, %Y %I:%M %p') }}
         </p>
         <p class="text-sm text-slate-700 mt-1">
-          <span class="font-medium text-slate-900">End:</span> {{ order.rental_end.strftime('%b %d, %Y') }}
+          <span class="font-medium text-slate-900">End:</span> {{ order.rental_end.strftime('%b %d, %Y %I:%M %p') }}
         </p>
         <p class="text-sm text-slate-700 mt-1">
-          <span class="font-medium text-slate-900">Duration:</span> {{ rental_days }} Day{% if rental_days != 1 %}s{% endif %}
+          <span class="font-medium text-slate-900">Duration:</span> {{ duration_hours }} Hour{% if duration_hours != 1 %}s{% endif %}
         </p>
       </div>
     </div>
@@ -94,9 +97,9 @@
         <thead>
           <tr class="bg-slate-50 border-y border-slate-200 text-slate-600 text-xs font-semibold uppercase tracking-wider">
             <th class="py-3 px-4">Item Description</th>
-            <th class="py-3 px-4 text-right">Daily Rate</th>
+            <th class="py-3 px-4 text-right">Unit Price (Calculated)</th>
             <th class="py-3 px-4 text-center">Qty</th>
-            <th class="py-3 px-4 text-center">Days</th>
+            <th class="py-3 px-4 text-center">Hours</th>
             <th class="py-3 px-4 text-right">Line Total</th>
           </tr>
         </thead>
@@ -111,7 +114,7 @@
             </td>
             <td class="py-4 px-4 text-right font-mono text-slate-700">${{ "%.2f"|format(item.daily_rate) }}</td>
             <td class="py-4 px-4 text-center text-slate-900">{{ item.quantity }}</td>
-            <td class="py-4 px-4 text-center text-slate-900">{{ rental_days }}</td>
+            <td class="py-4 px-4 text-center text-slate-900">{{ duration_hours }}</td>
             <td class="py-4 px-4 text-right font-mono font-semibold text-slate-900">${{ "%.2f"|format(item.line_total) }}</td>
           </tr>
           {% endfor %}

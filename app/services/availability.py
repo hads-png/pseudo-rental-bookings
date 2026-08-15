@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Any
 from sqlalchemy import select, func
 from app.extensions import db
@@ -9,18 +9,18 @@ from app.models.product import Product
 
 def get_booked_quantity(
     product_id: int,
-    start_date: date,
-    end_date: date,
+    start_time: datetime,
+    end_time: datetime,
     exclude_order_id: int | None = None
 ) -> int:
     """
     Calculates the total quantity of a product booked in non-cancelled orders
-    that overlap with [start_date, end_date].
+    that overlap with [start_time, end_time].
     
     Overlap condition:
-    Order.rental_start <= end_date AND Order.rental_end >= start_date
+    Order.rental_start < end_time AND Order.rental_end > start_time
     """
-    if not start_date or not end_date or start_date > end_date:
+    if not start_time or not end_time or start_time >= end_time:
         return 0
 
     stmt = (
@@ -29,8 +29,8 @@ def get_booked_quantity(
         .where(
             OrderItem.product_id == product_id,
             Order.status != 'cancelled',
-            Order.rental_start <= end_date,
-            Order.rental_end >= start_date
+            Order.rental_start < end_time,
+            Order.rental_end > start_time
         )
     )
 
@@ -43,26 +43,26 @@ def get_booked_quantity(
 
 def get_available_quantity(
     product_id: int,
-    start_date: date,
-    end_date: date,
+    start_time: datetime,
+    end_time: datetime,
     exclude_order_id: int | None = None
 ) -> int:
     """
-    Calculates available stock for a product in [start_date, end_date].
+    Calculates available stock for a product in [start_time, end_time].
     Available = total_stock - booked_quantity
     """
     product = db.session.get(Product, product_id)
     if not product or not product.is_active:
         return 0
 
-    booked = get_booked_quantity(product_id, start_date, end_date, exclude_order_id=exclude_order_id)
+    booked = get_booked_quantity(product_id, start_time, end_time, exclude_order_id=exclude_order_id)
     return max(0, product.total_stock - booked)
 
 
 def check_availability(
     items: list[dict[str, Any]],
-    start_date: date,
-    end_date: date,
+    start_time: datetime,
+    end_time: datetime,
     exclude_order_id: int | None = None
 ) -> list[str]:
     """
@@ -70,11 +70,11 @@ def check_availability(
     Returns a list of error messages (empty if all requested items are available).
     """
     errors = []
-    if not start_date or not end_date:
-        return ["Rental start and end dates are required."]
+    if not start_time or not end_time:
+        return ["Rental start and end times are required."]
 
-    if end_date < start_date:
-        return ["Rental end date must be on or after rental start date."]
+    if end_time <= start_time:
+        return ["Rental end time must be after rental start time."]
 
     # Aggregate quantities per product in case form submits duplicate product rows
     product_totals: dict[int, int] = {}
@@ -90,10 +90,10 @@ def check_availability(
             errors.append(f"Product ID {pid} does not exist.")
             continue
 
-        available = get_available_quantity(pid, start_date, end_date, exclude_order_id=exclude_order_id)
+        available = get_available_quantity(pid, start_time, end_time, exclude_order_id=exclude_order_id)
         if req_qty > available:
             errors.append(
-                f"Cannot book {req_qty} units of '{product.name}'. Only {available} available for selected dates."
+                f"Cannot book {req_qty} units of '{product.name}'. Only {available} available for selected time period."
             )
 
     return errors

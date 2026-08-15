@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Availability Calendar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-slate-900">Inventory Calendar</h1>
+    
+    <div class="flex items-center space-x-4">
+      <a href="{{ url_for('calendar.index', start_date=prev_date.strftime('%Y-%m-%d')) }}" class="btn-secondary px-3 py-1 text-sm">
+        &larr; Previous 14 Days
+      </a>
+      <span class="text-sm font-medium text-slate-700">{{ dates[0].strftime('%b %d') }} - {{ dates[-1].strftime('%b %d, %Y') }}</span>
+      <a href="{{ url_for('calendar.index', start_date=next_date.strftime('%Y-%m-%d')) }}" class="btn-secondary px-3 py-1 text-sm">
+        Next 14 Days &rarr;
+      </a>
+    </div>
+  </div>
+
+  <div class="card overflow-x-auto p-0">
+    <table class="w-full text-sm text-left whitespace-nowrap">
+      <thead>
+        <tr class="bg-slate-50 border-b border-slate-200">
+          <th class="px-4 py-3 font-semibold text-slate-900 sticky left-0 bg-slate-50 z-10 border-r border-slate-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.05)]">
+            Product
+          </th>
+          {% for d in dates %}
+            <th class="px-2 py-3 text-center min-w-[80px] border-r border-slate-200 last:border-r-0">
+              <div class="text-xs font-semibold text-slate-500 uppercase">{{ d.strftime('%a') }}</div>
+              <div class="text-sm font-bold text-slate-900">{{ d.strftime('%d') }}</div>
+              <div class="text-xs text-slate-400">{{ d.strftime('%b') }}</div>
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for row in calendar_data %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-4 py-3 sticky left-0 bg-white border-r border-slate-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.05)] z-10">
+            <a href="{{ url_for('products.detail', id=row.product.id) }}" class="font-medium text-indigo-600 hover:text-indigo-700">
+              {{ row.product.name }}
+            </a>
+            <div class="text-xs text-slate-500">Stock: {{ row.product.total_stock }}</div>
+          </td>
+          
+          {% for day in row.days %}
+            <td class="px-2 py-2 text-center border-r border-slate-200 last:border-r-0 align-top">
+              {% if day.available > 0 %}
+                <div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs mb-1">
+                  {{ day.available }}
+                </div>
+              {% else %}
+                <div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold text-xs mb-1">
+                  0
+                </div>
+              {% endif %}
+              
+              {% if day.orders %}
+                <div class="mt-1 flex flex-col gap-1 items-center">
+                  {% for order in day.orders %}
+                    <a href="{{ url_for('orders.detail', id=order.id) }}" title="{{ order.customer.full_name }}" class="text-[10px] px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors border border-indigo-100 max-w-full overflow-hidden text-ellipsis block">
+                      #{{ order.order_number }}
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -120,16 +120,16 @@
         <div class="space-y-2 text-sm">
           <div class="flex justify-between items-center">
             <span class="text-slate-500">Start Date:</span>
-            <span class="font-semibold text-slate-900">{{ order.rental_start.strftime('%b %d, %Y') }}</span>
+            <span class="font-semibold text-slate-900">{{ order.rental_start.strftime('%b %d, %Y %I:%M %p') }}</span>
           </div>
           <div class="flex justify-between items-center">
             <span class="text-slate-500">End Date:</span>
-            <span class="font-semibold text-slate-900">{{ order.rental_end.strftime('%b %d, %Y') }}</span>
+            <span class="font-semibold text-slate-900">{{ order.rental_end.strftime('%b %d, %Y %I:%M %p') }}</span>
           </div>
           <div class="flex justify-between items-center pt-2 border-t border-slate-100">
             <span class="text-slate-500">Duration:</span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700">
-              {{ rental_days }} day{% if rental_days != 1 %}s{% endif %}
+              {{ duration_hours }} hour{% if duration_hours != 1 %}s{% endif %}
             </span>
           </div>
         </div>
@@ -156,7 +156,7 @@
             <thead>
               <tr class="bg-slate-50/80 border-b border-slate-200/80">
                 <th class="text-left px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Product</th>
-                <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Daily Rate</th>
+                <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Unit Price (Calculated)</th>
                 <th class="text-center px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Qty</th>
                 <th class="text-right px-6 py-3 font-semibold text-slate-600 text-xs uppercase tracking-wider">Line Total</th>
               </tr>
@@ -171,7 +171,7 @@
                   {% endif %}
                 </td>
                 <td class="px-6 py-4 text-right text-slate-600 font-mono">
-                  ${{ "%.2f"|format(item.daily_rate) }} / day
+                  ${{ "%.2f"|format(item.daily_rate) }}
                 </td>
                 <td class="px-6 py-4 text-center font-medium text-slate-900">
                   {{ item.quantity }}

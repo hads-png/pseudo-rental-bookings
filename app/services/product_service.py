@@ -8,8 +8,10 @@ import uuid
 from slugify import slugify
 from werkzeug.utils import secure_filename
 
+from typing import Any
 from app.extensions import db
 from app.models.product import Product
+from app.models.pricing_tier import PricingTier
 
 
 def generate_unique_slug(name: str, product_id: int | None = None) -> str:
@@ -82,3 +84,26 @@ def delete_product_image(image_url: str | None, upload_folder: str) -> None:
 
     if os.path.isfile(filepath):
         os.remove(filepath)
+
+
+def update_pricing_tiers(product: Product, tiers_data: list[dict[str, Any]]) -> None:
+    """Updates pricing tiers for a product by completely replacing existing ones.
+
+    Args:
+        product: The Product model instance.
+        tiers_data: List of dicts, e.g., [{'name': '1 Week', 'duration_hours': 168, 'price': 100.00}]
+    """
+    product.pricing_tiers.clear()
+    
+    for tier in tiers_data:
+        duration_hours = int(tier.get('duration_hours', 0))
+        price = tier.get('price', 0)
+        name = tier.get('name', '').strip()
+        
+        if duration_hours > 0 and name:
+            new_tier = PricingTier(
+                name=name,
+                duration_hours=duration_hours,
+                price=price
+            )
+            product.pricing_tiers.append(new_tier)

@@ -92,4 +92,4 @@ def test_settings_route_protected(client, test_user):
     })
     auth_response = client.get('/settings/')
     assert auth_response.status_code == 200
-    assert b'Settings module will be fully active in Phase 8.' in auth_response.data
+    assert b'Business Settings' in auth_response.data

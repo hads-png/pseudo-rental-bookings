@@ -1,11 +1,11 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from flask import render_template, redirect, url_for, flash, request, current_app, abort
 from flask_login import login_required
 from app.blueprints.products import products_bp
-from app.blueprints.products.forms import ProductForm
+from app.blueprints.products.forms import ProductForm, ProductPricingForm
 from app.extensions import db
 from app.models.product import Product
-from app.services.product_service import generate_unique_slug, save_product_image, delete_product_image
+from app.services.product_service import generate_unique_slug, save_product_image, delete_product_image, update_pricing_tiers
 from app.services.availability import get_available_quantity, get_booked_quantity
 
 
@@ -93,8 +93,10 @@ def detail(id):
     availability_calendar = []
     for i in range(30):
         day = today + timedelta(days=i)
-        avail = get_available_quantity(product.id, day, day)
-        booked = get_booked_quantity(product.id, day, day)
+        start_time = datetime.combine(day, datetime.min.time())
+        end_time = datetime.combine(day, datetime.max.time())
+        avail = get_available_quantity(product.id, start_time, end_time)
+        booked = get_booked_quantity(product.id, start_time, end_time)
         availability_calendar.append({
             'date': day,
             'available': avail,
@@ -163,3 +165,42 @@ def delete(id):
         flash('An error occurred while deleting the product. Please try again.', 'danger')
 
     return redirect(url_for('products.index'))
+
+
+@products_bp.route('/<int:id>/pricing', methods=['GET', 'POST'])
+@login_required
+def pricing(id):
+    """Manage pricing tiers for a product."""
+    product = Product.query.filter_by(id=id, is_active=True).first_or_404()
+    
+    if request.method == 'POST':
+        # Form submitted, parse raw request.form to handle dynamic rows instead of WTForms FieldList which is strict
+        # The form will send tiers-0-name, tiers-0-duration_hours, tiers-0-price, etc.
+        # But to be simpler, let's just parse arrays if we use raw HTML array inputs: tier_name[], tier_duration[], tier_price[]
+        tier_names = request.form.getlist('tier_name[]')
+        tier_durations = request.form.getlist('tier_duration[]')
+        tier_prices = request.form.getlist('tier_price[]')
+        
+        tiers_data = []
+        for i in range(len(tier_names)):
+            if tier_names[i].strip() and tier_durations[i].strip() and tier_prices[i].strip():
+                try:
+                    tiers_data.append({
+                        'name': tier_names[i].strip(),
+                        'duration_hours': int(tier_durations[i]),
+                        'price': float(tier_prices[i])
+                    })
+                except ValueError:
+                    pass
+                    
+        update_pricing_tiers(product, tiers_data)
+        
+        try:
+            db.session.commit()
+            flash(f"Pricing tiers for '{product.name}' updated successfully.", 'success')
+            return redirect(url_for('products.detail', id=product.id))
+        except Exception:
+            db.session.rollback()
+            flash('An error occurred while updating pricing tiers.', 'danger')
+
+    return render_template('products/pricing.html', product=product)

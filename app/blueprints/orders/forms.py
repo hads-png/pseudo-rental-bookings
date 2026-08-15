@@ -1,8 +1,8 @@
 from decimal import Decimal
-from wtforms import Form, SelectField, IntegerField, DateField, DecimalField, TextAreaField, SubmitField, FieldList, FormField
+from wtforms.fields import DateTimeLocalField
+from wtforms import Form, SelectField, IntegerField, DecimalField, TextAreaField, SubmitField, FieldList, FormField
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, NumberRange, Optional, ValidationError
-
 
 class OrderItemForm(Form):
     product_id = SelectField('Product', coerce=int, validators=[DataRequired(message='Please select a product.')])
@@ -14,8 +14,8 @@ class OrderItemForm(Form):
 
 class OrderForm(FlaskForm):
     customer_id = SelectField('Customer', coerce=int, validators=[DataRequired(message='Please select a customer.')])
-    rental_start = DateField('Rental Start Date', format='%Y-%m-%d', validators=[DataRequired(message='Start date is required.')])
-    rental_end = DateField('Rental End Date', format='%Y-%m-%d', validators=[DataRequired(message='End date is required.')])
+    rental_start = DateTimeLocalField('Rental Start Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired(message='Start time is required.')])
+    rental_end = DateTimeLocalField('Rental End Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired(message='End time is required.')])
     discount = DecimalField('Discount ($)', default=Decimal('0.00'), places=2, validators=[
         Optional(),
         NumberRange(min=0, message='Discount cannot be negative.')

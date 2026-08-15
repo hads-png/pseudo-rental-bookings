@@ -40,15 +40,15 @@
 
         <div>
           <label for="rental_start" class="form-label">Start Date <span class="text-rose-500">*</span></label>
-          {{ form.rental_start(class="form-input " + ("border-rose-500" if form.rental_start.errors else ""), type="date") }}
-          {% for err in form.rental_start.errors %}
-            <p class="form-error">{{ err }}</p>
-          {% endfor %}
+          {{ form.rental_start(class="form-input " + ("border-rose-500" if form.rental_start.errors else ""), type="datetime-local") }}
+          {% if form.rental_start.errors %}
+            <p class="mt-1 text-sm text-rose-500">{{ form.rental_start.errors[0] }}</p>
+          {% endif %}
         </div>
 
         <div>
           <label for="rental_end" class="form-label">End Date <span class="text-rose-500">*</span></label>
-          {{ form.rental_end(class="form-input " + ("border-rose-500" if form.rental_end.errors else ""), type="date") }}
+          {{ form.rental_end(class="form-input " + ("border-rose-500" if form.rental_end.errors else ""), type="datetime-local") }}
           {% for err in form.rental_end.errors %}
             <p class="form-error">{{ err }}</p>
           {% endfor %}

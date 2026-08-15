@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full text-center space-y-6">
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full font-bold text-3xl">
+      404
+    </div>
+    <div class="space-y-2">
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Page Not Found</h1>
+      <p class="text-sm text-slate-500">Sorry, we couldn't find the page you were looking for. It might have been moved or deleted.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('dashboard.index') }}" class="inline-flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

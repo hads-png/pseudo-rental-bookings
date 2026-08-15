@@ -1,4 +1,5 @@
-from datetime import date, datetime, timezone
+import math
+from datetime import datetime, date
 from decimal import Decimal
 from typing import Any
 from sqlalchemy import select
@@ -17,30 +18,47 @@ ALLOWED_TRANSITIONS = {
 }
 
 
-def calculate_rental_days(start_date: date, end_date: date) -> int:
-    """Calculates inclusive rental days (min 1)."""
-    if not start_date or not end_date:
-        return 1
-    if end_date < start_date:
-        return 1
-    return max(1, (end_date - start_date).days + 1)
+def calculate_duration_hours(start_time: datetime, end_time: datetime) -> int:
+    """Calculates inclusive rental duration in hours (min 0)."""
+    if not start_time or not end_time or end_time <= start_time:
+        return 0
+    return math.ceil((end_time - start_time).total_seconds() / 3600)
 
+def calculate_item_total(quantity: int, product: Product, start_time: datetime, end_time: datetime) -> Decimal:
+    """Calculates the line item total using PricingTiers (greedy algorithm) or falling back to daily rate."""
+    duration_hours = calculate_duration_hours(start_time, end_time)
+    
+    if duration_hours == 0:
+        return Decimal('0.00')
 
-def calculate_line_total(quantity: int, daily_rate: Decimal | float | str, num_days: int) -> Decimal:
-    """Calculates line item total with decimal precision."""
+    tiers = sorted(product.pricing_tiers, key=lambda t: t.duration_hours, reverse=True)
+    
+    total_price_for_one_item = Decimal('0.00')
+    remaining_hours = duration_hours
+
+    for tier in tiers:
+        if tier.duration_hours <= 0:
+            continue
+        if remaining_hours <= 0:
+            break
+        num_tiers = remaining_hours // tier.duration_hours
+        if num_tiers > 0:
+            total_price_for_one_item += Decimal(str(tier.price)) * num_tiers
+            remaining_hours %= tier.duration_hours
+
+    # Fallback for remaining hours (charge in 24h blocks using daily_rate)
+    if remaining_hours > 0:
+        num_days = math.ceil(remaining_hours / 24.0)
+        total_price_for_one_item += Decimal(str(product.daily_rate)) * num_days
+
     qty_dec = Decimal(str(quantity))
-    rate_dec = Decimal(str(daily_rate))
-    days_dec = Decimal(str(num_days))
-    return (qty_dec * rate_dec * days_dec).quantize(Decimal('0.01'))
+    return (qty_dec * total_price_for_one_item).quantize(Decimal('0.01'))
 
 
 def calculate_order_totals(order: Order) -> None:
     """Recalculates subtotals, tax, and total on an Order instance in-place."""
-    rental_days = calculate_rental_days(order.rental_start, order.rental_end)
-    
     subtotal = Decimal('0.00')
     for item in order.order_items:
-        item.line_total = calculate_line_total(item.quantity, item.daily_rate, rental_days)
         subtotal += item.line_total
         
     order.subtotal = subtotal.quantize(Decimal('0.01'))
@@ -54,12 +72,12 @@ def calculate_order_totals(order: Order) -> None:
     order.total = (taxable_base + tax_amount).quantize(Decimal('0.01'))
 
 
-def generate_order_number(target_date: date | None = None) -> str:
+def generate_order_number(target_time: datetime | None = None) -> str:
     """Generates unique sequential order number in format ORD-YYYYMMDD-XXX."""
-    if target_date is None:
-        target_date = date.today()
+    if target_time is None:
+        target_time = datetime.now()
     
-    date_str = target_date.strftime('%Y%m%d')
+    date_str = target_time.strftime('%Y%m%d')
     prefix = f"ORD-{date_str}-"
     
     # Query highest sequence for the day
@@ -88,14 +106,14 @@ def validate_status_transition(current_status: str, new_status: str) -> bool:
 
 def create_order(
     customer_id: int,
-    rental_start: date,
-    rental_end: date,
+    rental_start: datetime,
+    rental_end: datetime,
     items_data: list[dict[str, Any]],
     discount: Decimal = Decimal('0.00'),
     tax_rate: Decimal = Decimal('0.0000'),
     notes: str | None = None
 ) -> Order:
-    """Creates a new order with snapshotted item rates and computed totals."""
+    """Creates a new order with calculated item rates and computed totals."""
     try:
         order_number = generate_order_number(rental_start)
         
@@ -111,8 +129,6 @@ def create_order(
         )
         db.session.add(order)
         
-        rental_days = calculate_rental_days(rental_start, rental_end)
-        
         for item in items_data:
             product_id = item['product_id']
             quantity = int(item['quantity'])
@@ -121,13 +137,15 @@ def create_order(
             if not product:
                 raise ValueError(f"Product ID {product_id} not found.")
                 
-            daily_rate = Decimal(str(product.daily_rate))
-            line_total = calculate_line_total(quantity, daily_rate, rental_days)
+            line_total = calculate_item_total(quantity, product, rental_start, rental_end)
+            
+            # Note: We reuse daily_rate field to store the effective unit price to avoid schema changes
+            effective_unit_price = (line_total / Decimal(str(quantity))).quantize(Decimal('0.01')) if quantity > 0 else Decimal('0.00')
             
             order_item = OrderItem(
                 product_id=product_id,
                 quantity=quantity,
-                daily_rate=daily_rate,
+                daily_rate=effective_unit_price,
                 line_total=line_total
             )
             order.order_items.append(order_item)
@@ -143,8 +161,8 @@ def create_order(
 def update_order(
     order: Order,
     customer_id: int,
-    rental_start: date,
-    rental_end: date,
+    rental_start: datetime,
+    rental_end: datetime,
     items_data: list[dict[str, Any]],
     discount: Decimal = Decimal('0.00'),
     tax_rate: Decimal = Decimal('0.0000'),
@@ -163,7 +181,6 @@ def update_order(
         order.notes = notes
         
         order.order_items.clear()
-        rental_days = calculate_rental_days(rental_start, rental_end)
         
         for item in items_data:
             product_id = item['product_id']
@@ -173,13 +190,13 @@ def update_order(
             if not product:
                 raise ValueError(f"Product ID {product_id} not found.")
                 
-            daily_rate = Decimal(str(product.daily_rate))
-            line_total = calculate_line_total(quantity, daily_rate, rental_days)
+            line_total = calculate_item_total(quantity, product, rental_start, rental_end)
+            effective_unit_price = (line_total / Decimal(str(quantity))).quantize(Decimal('0.01')) if quantity > 0 else Decimal('0.00')
             
             order_item = OrderItem(
                 product_id=product_id,
                 quantity=quantity,
-                daily_rate=daily_rate,
+                daily_rate=effective_unit_price,
                 line_total=line_total
             )
             order.order_items.append(order_item)

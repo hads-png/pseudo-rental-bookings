@@ -12,7 +12,7 @@ from app.services.order_service import (
     create_order,
     update_order,
     update_order_status,
-    calculate_rental_days
+    calculate_duration_hours
 )
 from app.services.availability import check_availability
 
@@ -57,14 +57,14 @@ def index():
 
     if start_date_str:
         try:
-            start_d = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            start_d = datetime.strptime(start_date_str, '%Y-%m-%d')
             query = query.where(Order.rental_start >= start_d)
         except ValueError:
             pass
 
     if end_date_str:
         try:
-            end_d = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            end_d = datetime.strptime(end_date_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
             query = query.where(Order.rental_end <= end_d)
         except ValueError:
             pass
@@ -142,8 +142,8 @@ def detail(id):
     if not order:
         abort(404)
 
-    rental_days = calculate_rental_days(order.rental_start, order.rental_end)
-    return render_template('orders/detail.html', order=order, rental_days=rental_days)
+    duration_hours = calculate_duration_hours(order.rental_start, order.rental_end)
+    return render_template('orders/detail.html', order=order, duration_hours=duration_hours)
 
 
 @orders_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
@@ -248,8 +248,8 @@ def invoice(id):
     if not order:
         abort(404)
 
-    rental_days = calculate_rental_days(order.rental_start, order.rental_end)
-    return render_template('invoices/detail.html', order=order, rental_days=rental_days)
+    duration_hours = calculate_duration_hours(order.rental_start, order.rental_end)
+    return render_template('invoices/detail.html', order=order, duration_hours=duration_hours)
 
 
 @orders_bp.route('/<int:id>/payment', methods=['POST'])

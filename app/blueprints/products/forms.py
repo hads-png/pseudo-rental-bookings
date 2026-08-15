@@ -1,7 +1,22 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, DecimalField, IntegerField, SubmitField
+from wtforms import StringField, TextAreaField, DecimalField, IntegerField, SubmitField, FieldList, FormField, Form
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
+
+class PricingTierForm(Form):
+    name = StringField('Tier Name (e.g. 1 Week)', validators=[DataRequired()])
+    duration_hours = IntegerField('Duration (Hours)', validators=[
+        DataRequired(),
+        NumberRange(min=1)
+    ])
+    price = DecimalField('Price ($)', places=2, validators=[
+        DataRequired(),
+        NumberRange(min=0.01)
+    ])
+
+class ProductPricingForm(FlaskForm):
+    tiers = FieldList(FormField(PricingTierForm), min_entries=0)
+    submit = SubmitField('Save Pricing Tiers')
 
 
 class ProductForm(FlaskForm):

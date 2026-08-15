@@ -9,8 +9,8 @@ class Order(db.Model):
     order_number = db.Column(db.String(20), unique=True, nullable=False, index=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
     status = db.Column(db.String(20), nullable=False, default='draft')  # draft, confirmed, picked_up, returned, cancelled
-    rental_start = db.Column(db.Date, nullable=False)
-    rental_end = db.Column(db.Date, nullable=False)
+    rental_start = db.Column(db.DateTime, nullable=False)
+    rental_end = db.Column(db.DateTime, nullable=False)
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     discount = db.Column(db.Numeric(10, 2), default=0.00)
     tax_rate = db.Column(db.Numeric(5, 4), default=0.0000)

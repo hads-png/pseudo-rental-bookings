@@ -34,6 +34,7 @@ def create_app(config_class=Config):
     from app.blueprints.invoices import invoices_bp
     from app.blueprints.settings import settings_bp
     from app.blueprints.api import api_bp
+    from app.blueprints.calendar import calendar_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -43,15 +44,16 @@ def create_app(config_class=Config):
     app.register_blueprint(invoices_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(calendar_bp)
 
     # Error handlers
     @app.errorhandler(404)
     def not_found_error(error):
-        return render_template('base.html'), 404
+        return render_template('errors/404.html'), 404
 
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
-        return render_template('base.html'), 500
+        return render_template('errors/500.html'), 500
 
     return app
